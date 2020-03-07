@@ -49,19 +49,16 @@ class speedUp:
     def constructQuestion(self, generic, params):
         loop_bounds, move, degrees = params
         question = []
-        print("generic ", repr(generic), "params ", params)
         for statement in generic.body:
             statement = statement.copy()
             if isinstance(statement, ForLoop):
                 statement.bounds = loop_bounds
-                print("bound is ", statement.bounds)
                 statement.statements = self.constructQuestion(statement.statements, params)
             elif isinstance(statement, Move):
                 statement.amount = move
             elif isinstance(statement, Turn):
                 statement.degrees = degrees
             question.append(statement)
-            print("statement is ", statement)
 
         return Statements(question)
 
@@ -83,7 +80,6 @@ class speedUp:
     def constructGenericQuestions(self):
         inputVals = [TURN, FOR_LOOP, MOVE]
         permutations = [[self.getEmptyStatement(statement) for statement in perm] for perm in self.perms(inputVals) if self.valid_perm(perm)]
-        print("permutations ",permutations)
         questions = []
         for perm in permutations:
             if self.valid_perm(perm):
