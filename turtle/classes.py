@@ -2,7 +2,7 @@ import random
 import turtle
 from utils import *
 
-class speedUp:
+class MrRoboto:
 
     def __init__(self, config):
         self.config = config
@@ -129,6 +129,7 @@ class Drawing:
         self.turtle = turtle.Turtle()
         self.drawing_turtle = turtle.Turtle()
         self.drawing_turtle.ht()
+        self.filenum = 0
 
     def draw_grid(self):
         dist = Drawing.dist
@@ -156,7 +157,7 @@ class Drawing:
         turtle.update()
 
     def execute_random_question(self):
-        s = speedUp(5)
+        s = MrRoboto(5)
         import random
         drawing_turtle = self.drawing_turtle
         drawing_turtle.st()
@@ -166,6 +167,14 @@ class Drawing:
         drawing_turtle.reset()
         drawing_turtle.color("red")
         q.execute(drawing_turtle)
+
+    def save_screen(self):
+        from PIL import Image
+        import tkinter
+        ts = turtle.getscreen()
+        ts.getcanvas().postscript(file=f"./images/{str(self.filenum)}.eps")
+        Image.open(f"./images/{str(self.filenum)}.eps").save(f"./images/{str(self.filenum)}.png")
+        self.filenum += 1
 
 class Statements:
     def __init__(self, body = []):
