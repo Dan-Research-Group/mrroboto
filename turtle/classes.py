@@ -1,4 +1,5 @@
 import random
+import turtle
 from utils import *
 
 class speedUp:
@@ -63,9 +64,10 @@ class speedUp:
         return Statements(question)
 
     def constructQuestions(self):
+        self.constructGenericQuestions()
         TURNS = [90, 180, -90]
         MOVES = [1,2,3,-1,-2,-3]
-        FOR_LOOP = [(0, 'N'), (0, '2N'), (0, '3')]
+        FOR_LOOP = [(0, '1'), (0, '2'), (0, '3')]
 
         combinations = [(loop_bounds, move, turn) for loop_bounds in FOR_LOOP \
         for move in MOVES for turn in TURNS]
@@ -120,6 +122,51 @@ class speedUp:
                 out += [[lst[i]] + perm]
         return out
 
+class Drawing:
+    c = 2
+    dist = 50
+    def __init__(self):
+        self.turtle = turtle.Turtle()
+        self.drawing_turtle = turtle.Turtle()
+        self.drawing_turtle.ht()
+
+    def draw_grid(self):
+        dist = Drawing.dist
+        c = 2
+        lines = 8
+        half = lines // 2
+        low_pos = dist / 2 - half * dist
+        turtle.tracer(0, 0)
+        t = self.turtle
+        for y in range(-half, half):
+            t.penup()
+            t.setpos(c * low_pos, c * (dist * y + dist / 2))
+            t.pendown()
+            t.forward(c * -2 * low_pos)
+        t.left(90)
+        for x in range(-half, half):
+            t.penup()
+            t.setpos(c * (dist * x + dist / 2), c * low_pos)
+            t.pendown()
+            t.forward(c * -2 * low_pos)
+        t.penup()
+        t.right(90)
+        t.setpos(0, 0)
+        t.ht()
+        turtle.update()
+
+    def execute_random_question(self):
+        s = speedUp(5)
+        import random
+        drawing_turtle = self.drawing_turtle
+        drawing_turtle.st()
+        lst = s.constructQuestions()
+        q = random.choice(lst)
+        print("Executing:\n", q)
+        drawing_turtle.reset()
+        drawing_turtle.color("red")
+        q.execute(drawing_turtle)
+
 class Statements:
     def __init__(self, body = []):
         self.body = body
@@ -133,6 +180,13 @@ class Statements:
     def __repr__(self):
         return repr(self.body)
 
+    def execute(self, turtle_obj):
+        turtle_obj.setheading(90)
+        for statement in self.body:
+            statement.execute(turtle_obj)
+        turtle.update()
+
+
 class ForLoop():
     """ 
     Initalize the for loop using bounds and statements
@@ -140,7 +194,7 @@ class ForLoop():
     bounds: a tuple consisting of the lower and upper bound of the for loop
     statements: an array of statements that go into the for loop
     """
-    def __init__(self, statements = Statements(), bounds = (0, 'N')):
+    def __init__(self, statements = Statements(), bounds = (0, '1')):
         self.bounds = bounds
         self.statements = statements
 
@@ -156,6 +210,11 @@ class ForLoop():
 
     def copy(self):
         return ForLoop(self.statements, self.bounds)
+
+    def execute(self, turtle_obj):
+        for i in range(self.bounds[0], int(self.bounds[1]) + 1):
+            for statement in self.statements.body:
+                statement.execute(turtle_obj)
 
 class Move():
     def __init__(self, amount = 0):
@@ -178,6 +237,10 @@ class Move():
     def param(self, amount):
         self.amount = amount
 
+    def execute(self, turtle_obj):
+        turtle_obj.forward(Drawing.dist * 2 * self.amount)
+
+
 class Turn():
 
     def __init__(self, degrees = 0):
@@ -191,6 +254,9 @@ class Turn():
 
     def copy(self):
         return Turn(self.degrees)
+
+    def execute(self, turtle_obj):
+        turtle_obj.right(self.degrees)
 
 
 # Class to parse JSON input file
