@@ -1,7 +1,25 @@
-import random
-import turtle
+import random, copy, turtle
 import numpy as np
-from utils import *
+import prairielearn as pl
+
+def generate(data):
+
+    # Put these two integers into data['params']
+    data['params']['a'] = 1
+    data['params']['b'] = 2
+
+    r = MrRoboto()
+    q = r.get_random_question()
+    ans = r.get_solution_matrix(q)
+
+    data['params']['question'] = str(q)
+
+    # Answer to each matrix entry converted to JSON
+    data['correct_answers']['matrixA'] = pl.to_json(ans)
+
+TURN = 1
+FOR_LOOP = 3
+MOVE = 5
 
 class MrRoboto:
 
@@ -213,7 +231,7 @@ class Statements:
         output = ""
         for statement in self.body:
             output += f"\n{str(statement)}"
-        return output
+        return output.lstrip('\n')
 
     def __repr__(self):
         return repr(self.body)
@@ -376,3 +394,4 @@ class outputJSON:
     def __init__(self, speedUp, fp):
         self.speedUp = speedUp
         self.fp = fp
+
