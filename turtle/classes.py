@@ -157,6 +157,7 @@ class Drawing:
         turtle.update()
 
     def execute_random_question(self):
+        turtle.tracer(0, 0)
         s = MrRoboto(5)
         import random
         drawing_turtle = self.drawing_turtle
