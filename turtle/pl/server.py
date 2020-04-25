@@ -1,21 +1,46 @@
-import random, copy, turtle
+import random, copy
 import numpy as np
-import prairielearn as pl
 
+try:
+    import prairielearn as pl
+except:
+    pass
+try:
+    import turtle
+except:
+    pass
+
+r, q, ans = 0, 0, 0
 def generate(data):
-
+    global r, q, ans
     # Put these two integers into data['params']
     data['params']['a'] = 1
     data['params']['b'] = 2
 
-    r = MrRoboto()
+    r = MrRoboto(3)
     q = r.get_random_question()
     ans = r.get_solution_matrix(q)
-
-    data['params']['question'] = str(q)
+    data['params']['question'] = str(q).lstrip('\n\t')
 
     # Answer to each matrix entry converted to JSON
     data['correct_answers']['matrixA'] = pl.to_json(ans)
+
+# def grade(data):
+#     # All elements will have already graded their answers (if any) before this point.
+#     # data["partial_scores"][NAME] is the individual element scores (0 to 1).
+#     # data["score"] is the total score for the question (0 to 1).
+#     # We can modify or delete any of these if we have a custom grading method.
+#     # This function only runs if `parse()` did not produce format errors, so we can assume all data is valid.
+
+#     # grade() can also set `data['format_errors'][NAME]` if there is any reason to mark the question
+#     # invalid during grading time.  This will cause the question to not use up one of the student's attempts' on exams.
+
+#     # As an example, we will give half points for incorrect answers larger than "x":
+#     # if data["score"] == 0: # only if not already correct
+#     #     if data["submitted_answers"]["y"] > data["params"]["x"]:
+#     #         data["partial_scores"]["y"] = 0.5
+#     #         data["score"] = 0.5
+#     print(data["submitted_answers"]["_files"])
 
 TURN = 1
 FOR_LOOP = 3
@@ -223,6 +248,14 @@ class Drawing:
         Image.open(f"./images/{str(self.filenum)}.eps").save(f"./images/{str(self.filenum)}.png")
         self.filenum += 1
 
+class Empty():
+
+    def __init__(self, symbol):
+        self.symbol = symbol
+
+    def __str__(self):
+        return self.symbol
+
 class Statements:
     def __init__(self, body = []):
         self.body = body
@@ -235,6 +268,12 @@ class Statements:
 
     def __repr__(self):
         return repr(self.body)
+
+    def blank_str(self):
+        output = ""
+        for statement in self.body:
+            output += f"\n{statement.blank_str()}"
+        return output.lstrip('\n')
 
     def execute(self, turtle_obj):
         turtle_obj.setheading(90)
@@ -303,6 +342,9 @@ class ForLoop():
     bounds: a tuple consisting of the lower and upper bound of the for loop
     statements: an array of statements that go into the for loop
     """
+    blank1 = Empty("A")
+    blank2 = Empty("B")
+
     def __init__(self, statements = Statements(), bounds = (0, '1')):
         self.bounds = bounds
         self.statements = statements
@@ -316,6 +358,12 @@ class ForLoop():
         for statement in self.statements.body:
             body_string += f"\t{statement}\n"
         return f"for i = {self.bounds[0]} to {self.bounds[1]}: \n {body_string.rstrip()}"
+
+    def blank_str(self):
+        body_string = ""
+        for statement in self.statements.body:
+            body_string += f"\t{statement.blank_str()}\n"
+        return f"for i = {self.blank1} to {self.blank2}: \n {body_string.rstrip()}"
 
     def copy(self):
         return ForLoop(self.statements, self.bounds)
@@ -331,6 +379,8 @@ class ForLoop():
                 statement.execute_matrix(matrix)
 
 class Move():
+    blank = Empty("C")
+
     def __init__(self, amount = 0):
         self.amount = amount
 
@@ -340,6 +390,8 @@ class Move():
     def __repr__(self):
         return f"Move({self.amount})"
 
+    def blank_str(self):
+        return f"Move({self.blank})"
     def copy(self):
         return Move(self.amount)
 
@@ -360,6 +412,8 @@ class Move():
 
 class Turn():
 
+    blank = Empty("D")
+
     def __init__(self, degrees = 0):
         self.degrees = degrees
 
@@ -369,6 +423,9 @@ class Turn():
     def __repr__(self):
         return f"Turn({self.degrees})"
 
+    def blank_str(self):
+        return f"turn {self.blank} degrees"
+
     def copy(self):
         return Turn(self.degrees)
 
@@ -377,21 +434,3 @@ class Turn():
 
     def execute_matrix(self, matrix):
         matrix.turn(self.degrees)
-
-
-# Class to parse JSON input file
-# The updated config will be consumed by speedUp object
-class updateConfig:
-
-    def __init__(self, fp):
-        self.fp = fp
-
-
-# Class to turn speedUp object into JSON
-# that will be output
-class outputJSON:
-
-    def __init__(self, speedUp, fp):
-        self.speedUp = speedUp
-        self.fp = fp
-
